@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ja">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet"  href="css/sanitize.css">
+<link rel="stylesheet"  href="css/typography.css">
+<link rel="stylesheet"  href="css/style.css">
+<script src="js/vue.js"></script>
+<script>
+  // Adjust page height for mobile Chrome
+  let vh = window.innerHeight * 0.01; 
+  document.documentElement.style.setProperty('--vh', `${vh}px`); 
+  window.addEventListener('resize', () => { 
+    vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`); 
+  }); 
+</script>
+<title>おべんとサーチ</title>
+
+<div id="app" v-cloak>
+
+<main>
+  <h1 class="title">
+    <label v-if="selectedUnit"><a href="javascript:void(0)" @click="openUnitPopup">{{selectedUnit.name}}</a>の</label>メニュー検索
+  </h1>
+  <input class="keyword-input" :placeholder="placeholder" v-model="articleKeyword">
+  <ul class="normal-list-horizontal">
+    <list-item
+      v-for="article in visibleArticles"
+      ref="article"
+      :liclass="'normal-list-item-horizontal'"
+      :imgclass="'large-icon'"
+      :key="article.id"
+      :data="article"
+      :text="article.name"
+      :subtext="`${article.price}円`"
+      :icon="article.icon"
+      :click="articleClicked"
+      :highlighter="getKeywordHighlighted">
+    </list-item>
+  </ul>
+  <!-- <ul class="legend-list" v-if="menufeedAvailable">
+    <legend-list-item
+      v-for="category in topLevelCategories"
+      :key="category.id"
+      :text="category.name"
+      :icon="category.icon">
+    </list-item-legend>
+  </ul> -->
+  <div class="datasource" v-if="menufeedAvailable">
+    <a :href="homepageUrl" target="_blank">{{selectedUnit.name}}のホームページ</a>
+  </div>
+</main>
+
+<transition name="popup">
+  <div class="popup-fill" v-if="unitPopupVisible" @click="closeUnitPopup">
+    <div class="popup-window" tabindex="0" ref="popupWindow" @click="dummy" @keydown="articlePopupKeydown">
+      <div class="popup-title">お弁当屋を選びましょう</div>
+      <div class="popup-close-box" v-if="menufeedAvailable" @click="closeUnitPopup">
+        <div class="popup-close">✖</div>
+      </div>
+      <div class="popup-content-box">
+        <!-- <input class="unit-input" v-model="unitKeyword"> -->
+        <ul class="normal-list-horizontal unit-list">
+          <list-item
+            class="normal-list-item-horizontal unit-list-item"
+            v-for="id in Object.keys(allUnitsById)"
+            ref="id"
+            :key="id"
+            :data="allUnitsById[id]"
+            :text="allUnitsById[id].name"
+            :click="popupUnitClicked">
+          </list-item>
+        </ul>
+      </div>
+    </div>
+  </div>
+</transition>
+
+<transition name="popup">
+  <div class="popup-fill" v-if="selectedArticle" @click="closeArticlePopup">
+    <div class="popup-window" tabindex="0" ref="popupWindow" @click="dummy" @keydown="articlePopupKeydown">
+      <div class="popup-pager-box">
+        <div class="popup-prev" @click="moveArticleSelection(-1, true)">&lt;</div>
+        <div class="popup-next" @click="moveArticleSelection(+1, true)">&gt;</div>
+      </div>
+      <div class="popup-close-box" @click="closeArticlePopup">
+        <div class="popup-close">✖</div>
+      </div>
+      <div class="popup-content-box">
+        <img class="popup-main-icon" :src="selectedArticle.icon"/>
+        <div>
+          <div class="popup-main-text"><strong>{{selectedArticle.name}}</strong></div>
+          <div class="popup-note-text">{{selectedArticle.price}}円</div>
+        </div>
+        <img class="popup-note-icon" src="img/note.png" v-if="selectedArticle.note"/>
+        <div class="popup-note-text" v-if="selectedArticle.note">{{selectedArticle.note}}</div>
+      </div>
+    </div>
+  </div>
+</transition>
+
+</div>
+
+<script src="js/kana2roman.js"></script>
+<script src="js/main.js"></script>
