@@ -1,12 +1,11 @@
 (function() {
 
 Vue.component("list-item", {
-    props: ["liclass", "imgclass", "data", "text", "subtext", "icon", "click", "highlighter"],
+    props: ["liclass", "imgclass", "data", "text", "icon", "click", "highlighter"],
     template: `
         <li v-bind:class="liclass" @click="click(data)">
             <img v-bind:class="imgclass" v-if="icon" :src="icon">
             <div v-html="highlighter ? highlighter(text) : text" />
-            <div class="grayout-text" v-if="subtext" v-html="subtext" />
         </li>
     `
 });
@@ -14,9 +13,9 @@ Vue.component("list-item", {
 // 品目リスト更新時の一回分の増加数(0なら一回で全部表示)
 const ARTICLE_TRANSFER_UNIT = 50;
 
-// お弁当屋
+// シリーズ
 const SUPPORTED_UNITS = [
-    { id: "dondon", name: "どんどん", file: "data/dondon/menu.json" }
+    { id: "themaking", name: "THE MAKING", file: "data/themaking/themaking.json" }
 ];
 
 function getQueryVars() {
@@ -77,10 +76,12 @@ function getMatchedArticles(articles, keyword) {
 
 function requestFeed(unit) {
     const request = new XMLHttpRequest();
+    console.log("unit.file: " + unit.file)
     request.open('GET', unit.file);
     request.responseType = 'json';
     request.send();
     request.onload = function() {
+        console.log("request.response: " + request.response)
         appState.load(request.response, unit);
         app = app || createApp(appState);
         if (appState.initialArticleKeyword) {
@@ -103,10 +104,13 @@ class Article {
         } else {
             this.icon = "img/noimage.png"
         }
-        this.price = item._price;
+        this.date = item.date_published;
         this.nameKana = item._title_kana;
-        this.nameRoman = kana2roman.convert(item._title_kana, true);
-        this.note = item._note;
+        if (item._title_kana) {
+            this.nameRoman = kana2roman.convert(item._title_kana, true);
+        }
+        this.description = item.content_text;
+        this.video = item.external_url;
     }
 }
 
@@ -266,7 +270,7 @@ function createApp(data) {
             updateQueryString() {
                 q = [];
                 if (this.selectedUnit) {
-                    q.push(`unit=${this.selectedUnit.id}`);
+                    q.push(`series=${this.selectedUnit.id}`);
                 }
                 if (this.articleKeyword) {
                     q.push(`keyword=${this.articleKeyword}`);
@@ -281,8 +285,9 @@ let app = null;
 const appState = new AppState();
 
 const vars = getQueryVars();
-if (vars.unit) {
-    appState.selectedUnit = appState.allUnitsById[vars.unit];
+appState.selectedUnit = appState.allUnitsById["themaking"]
+if (vars.series) {
+    appState.selectedUnit = appState.allUnitsById[vars.series];
 }
 if (vars.keyword) {
     appState.initialArticleKeyword = vars.keyword;

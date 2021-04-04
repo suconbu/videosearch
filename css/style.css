@@ -284,7 +284,8 @@ input::placeholder {
 	border-radius: 0.2rem;
 }
 .popup-main-text {
-	font-size: 2.0rem;
+	font-size: 1.5rem;
+	/* font-size: 2.0rem; */
 }
 .popup-note-icon {
 	position: relative;
@@ -292,7 +293,8 @@ input::placeholder {
 	height: 1.5rem;
 }
 .popup-note-text {
-	font-size: 1.5rem;
+	font-size: 1.0rem;
+	/* font-size: 1.5rem; */
 	max-height: 20vh;
 	overflow-y: auto;
 }
